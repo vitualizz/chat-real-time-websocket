@@ -1,4 +1,4 @@
-service: real-time-chat-ws
+service: real-time-chat
 
 provider:
   name: aws
