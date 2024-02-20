@@ -1,0 +1,61 @@
+service: real-time-chat-ws
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage, 'dev'}
+  websocketsApiName: real-time-chat-api
+  websocketsApiRouteSelectionExpression: $request.body.action
+  websocketsDescription: Real time chat with websockets
+
+functions:
+  connect:
+    handler: dist/handlers/connect.default
+    events:
+      - websocket:
+        route: $connect
+  disconnect:
+    handler: dist/handlers/disconnect.default
+    events:
+      - websocket:
+        route: $disconnect
+  broadcast:
+    handler: dist/handlers/broadcast.defualt
+    events:
+      - websocket:
+        route: broadcast
+
+resources:
+  Resources:
+    chatsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-chats
+        AttributeDefinitions:
+          - AttributeName: chatId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: chatId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        SSESpecification:
+          SSEEnabled: true
+    messagesTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-messages
+        AttributeDefinitions:
+          - AttributeName: messageId
+            AttributeType: S
+          - AttributeName: chatId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: messageId
+            KeyType: HASH
+          - AttributeName: chatId
+            KetType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        SSESpecification:
+          SSEEnabled: true
