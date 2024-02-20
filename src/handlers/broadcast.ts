@@ -18,15 +18,15 @@ export default async (event: APIGatewayEvent) => {
     },
   };
 
+  const endpoint = 'https://' + event.requestContext.domainName + '/' + event.requestContext.stage;
+  const apiGateway = new ApiGatewayManagementApi({
+    apiVersion: '2018-11-29',
+    endpoint,
+  });
+
   try {
     const data = await dbClient.send(new ScanCommand(scanCommand));
     const connections = data.Items || [];
-
-    const endpoint = 'https://' + event.requestContext.domainName + '/' + event.requestContext.stage;
-    const apiGateway = new ApiGatewayManagementApi({
-      apiVersion: '2018-11-29',
-      endpoint,
-    });
 
     const postData = JSON.stringify(event.body);
 
