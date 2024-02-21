@@ -2,11 +2,21 @@ service: real-time-chat
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   websocketsApiName: real-time-chat-api
   websocketsApiRouteSelectionExpression: $request.body.action
   websocketsDescription: Real time chat with websockets
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:*"
+            - "logs:*"
+            - "states:*"
+            - "events:*"
+          Resource: "*"
 
 functions:
   connect:
@@ -29,7 +39,6 @@ resources:
   Resources:
     chatsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: Retain
       Properties:
         TableName: ${self:service}-${self:provider.stage}-chats
         AttributeDefinitions:
@@ -39,11 +48,23 @@ resources:
           - AttributeName: chatId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-        SSESpecification:
-          SSEEnabled: true
+    connectionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-connections
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+          - AttributeName: userId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
     messagesTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: Retain
       Properties:
         TableName: ${self:service}-${self:provider.stage}-messages
         AttributeDefinitions:
@@ -55,7 +76,17 @@ resources:
           - AttributeName: messageId
             KeyType: HASH
           - AttributeName: chatId
-            KetType: RANGE
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
-        SSESpecification:
-          SSEEnabled: true
+
+plugins:
+  - serverless-dotenv-plugin
+
+package:
+  excludeDevDependencies: true
+  patterns:
+    - '!node_modules/**'
+    - '!src/**'
+    - '!.serverless/**'
+    - '!.git/**'
+    - 'dist/**'
