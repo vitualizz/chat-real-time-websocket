@@ -2,18 +2,18 @@ import { type APIGatewayEvent } from 'aws-lambda'
 
 export const validateEvent = (event: APIGatewayEvent) => {
   const connectionId = event.requestContext.connectionId
-  const chatId = event.queryStringParameters?.chatId
+  const userId = event.queryStringParameters?.userId
 
   if (!connectionId) {
     throw 'Connection ID not found'
   }
 
-  if (!chatId) {
-    throw 'Chat ID not found'
+  if (!userId) {
+    throw 'User ID not found'
   }
 
   return {
     connectionId,
-    chatId
+    userId
   }
 }

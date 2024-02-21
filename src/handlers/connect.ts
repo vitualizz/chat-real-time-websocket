@@ -5,15 +5,17 @@ import { validateEvent } from '../validators/params'
 
 const nodeEnv = process.env.SLS_NODE_ENV
 export default async (event: APIGatewayEvent) => {
-  const { connectionId, chatId } = validateEvent(event)
+  const { connectionId, userId } = validateEvent(event)
 
   console.log('Connected to the DynamoDB')
+  console.log('Connection ID:', connectionId)
+  console.log('User ID:', userId)
 
   const putParams = {
-    TableName: `real-time-chat-${nodeEnv}-connections`,
+    TableName: `real-time-chat-ws-${nodeEnv}-connections`,
     Item: {
       connectionId: { S: connectionId },
-      chatId: { S: chatId },
+      userId: { S: userId },
     },
   }
 
@@ -30,8 +32,6 @@ export default async (event: APIGatewayEvent) => {
 
   return {
     statusCode: 200,
-    body: {
-      message: 'Connected to the database',
-    }
+    body: 'Connected'
   }
 }

@@ -5,15 +5,15 @@ import { validateEvent } from '../validators/params';
 
 const nodeEnv = process.env.SLS_NODE_ENV;
 export default async (event: APIGatewayEvent) => {
-  const { connectionId, chatId } = validateEvent(event);
+  const { connectionId, userId } = validateEvent(event);
 
   console.log('Disconnecting from the DynamoDB');
 
   const deleteCommand = {
-    TableName: `real-time-chat-${nodeEnv}-connections`,
+    TableName: `real-time-chat-ws-${nodeEnv}-connections`,
     Key: {
       connectionId: { S: connectionId },
-      chatId: { S: chatId },
+      userId: { S: userId },
     },
   }
 
@@ -22,16 +22,12 @@ export default async (event: APIGatewayEvent) => {
   } catch (error) {
     return {
       statusCode: 500,
-      body: {
-        message: 'Error disconnecting from the database',
-      },
+      body: "Error disconnecting from the database"
     }
   }
 
   return {
     statusCode: 200,
-    body: {
-      message: 'Disconnected from the database',
-    }
+    body: "Disconnected"
   }
 }
